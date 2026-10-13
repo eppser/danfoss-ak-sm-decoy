@@ -1,0 +1,10 @@
+struct message_header_struct {
+	_msg_size                  SIZE;                 /*     0     2 */
+	_queue_id                  TARGET_QID;           /*     2     2 */
+	_queue_id                  SOURCE_QID;           /*     4     2 */
+	uchar                      CONTROL;              /*     6     1 */
+	uchar                      RESERVED;             /*     7     1 */
+
+	/* size: 8, cachelines: 1, members: 5 */
+	/* last cacheline: 8 bytes */
+};

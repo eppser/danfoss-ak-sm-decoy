@@ -1,0 +1,10 @@
+Danfoss AK-SM 800A — real protocol handshakes (captured 2026-10-13, loopback, legitimate traffic)
+
+modbus_502.pcap            Modbus/TCP device-id (FC43) + register poll (FC3/FC4)
+snmp_5136.pcap             SNMP v2c get-request/response (sysDescr = Danfoss AK-SM 800A ...)
+storeview_8443_tls.pcap    StoreView HTTPS: full TLS 1.2 handshake (cert CN=DanfossSM800A) + HTTP
+servicetool_1041_tls.pcap  Service Tool port: real TLS handshake (Danfoss cert, ECDHE/CHACHA20 suites)
+*.handshake.txt            openssl -msg play-by-play of the two TLS handshakes
+
+Open the .pcap files in Wireshark. For 5136 use "Decode As -> SNMP"; for 1041 "Decode As -> TLS".
+NOT included: PI200 (1041/udp, proprietary format) and the encrypted Service-Tool app layer inside TLS.

@@ -12,8 +12,16 @@ profile of a real AK-SM 800A (verified from the device firmware's own firewall s
     Modbus/TCP     502   southbound control bus  (reads live temps/setpoints; writes reflected)
     StoreView-Web  8443  remote management UI over HTTPS  (nginx/1.26.0, xml.cgi, login, dashboard)
     SNMP           5136  UDP  system-group responder  (Danfoss identity; Shodan fingerprint)
-    Service Tool   1041  TCP  proprietary service port  (accept + capture, no reply)
-    PI200          1041  UDP  proprietary discovery port  (capture, no reply)
+    Service Tool   1041  TCP  TLS service port  (presents the device cert; captures first bytes, no app reply)
+    PI200          1041  UDP  discovery port  (decodes + flags query/scan datagrams; no reply)
+
+Two deliberate deviations from a real AK-SM 800A, kept on purpose:
+  * Modbus/TCP 502 is a *listener* here.  A real AK-SM 800A is a Modbus master (it reaches
+    downstream controllers), so it does not listen on 502 - the firmware's own firewall never
+    opens it.  We expose it anyway because it is the cold-chain lure's primary attack surface and
+    the strongest draw for Modbus scanners (Shodan).  See analysis/ for the firmware evidence.
+  * StoreView-Web is on 8443, not the real 443, because this edge host already serves another
+    site on 80/443.  Everything else about the TLS and HTTP surface matches the device.
 
 It is a DECOY.  Nothing is actuated: a "write" (a Modbus register write, a web setpoint change) is
 stored in memory and shown back on the next read so the caller believes it took effect, while the
@@ -31,6 +39,9 @@ Env:
   COLDSTORE_PI200_BIND       host:port for PI200/UDP         (default 0.0.0.0:1041)
   COLDSTORE_CERT, COLDSTORE_KEY   PEM cert/key; when both are present the web UI is HTTPS,
                                   otherwise plain HTTP (a real unit is HTTPS)
+  COLDSTORE_ST_CERT, COLDSTORE_ST_KEY   PEM cert/key for the Service Tool TLS port (1041/tcp).
+                                  The real device uses its own cert there (/danfoss/certs/st_cert.pem);
+                                  if unset, falls back to COLDSTORE_CERT/KEY, then to plaintext capture.
   Set any *_BIND to the empty string to disable that listener.
 """
 import calendar
@@ -1217,26 +1228,105 @@ class _SnmpHandler(socketserver.BaseRequestHandler):
 
 
 # ===================================================================================================
-# Service Tool (TCP 1041) and PI200 (UDP 1041) - proprietary Danfoss ports.
+# Service Tool (TCP 1041) and PI200 (UDP 1041) - the device's two proprietary Danfoss ports.
 #
-# Both are real external ports on the device (firewall1.sh), speaking proprietary Danfoss protocols
-# with no public specification.  There is nothing faithful to reply with - a wrong answer is a worse
-# tell than a quiet open port - so these are capture-and-log only: the TCP port accepts and records
-# the client's opening bytes; the UDP port records the datagram.  Neither sends a crafted response.
+# Both are real external ports (firmware firewall1.sh).  What is faithful to each is grounded in a
+# reverse-engineering pass over the real server binary `sm_app` (full DWARF; see analysis/):
+#
+#   * Service Tool (1041/tcp) is a TLS server.  `sm_app` calls SSL_CTX_use_certificate_file /
+#     SSL_accept (OpenSSL 1.0.2d) presenting /danfoss/certs/st_cert.pem, then speaks a proprietary
+#     application protocol of ~1617 TFN_* transaction functions *inside* the TLS channel.  We present
+#     the device TLS layer exactly (so a TLS scanner sees a real handshake + the device certificate),
+#     then capture the client's first application bytes and close.  We do NOT emulate the TFN layer:
+#     it is unspecified and a wrong reply would be a worse tell than silence.
+#
+#   * PI200 (1041/udp) is a broadcast discovery/scan protocol.  `sm_app`'s PI200_send_query emits a
+#     64-byte query datagram to udp/1041; node records travel as the 128-byte `eth485_node` struct
+#     (protocol_version, store_name[31], unit_name[31], ip, versions, checkbyte).  We decode and flag
+#     inbound query/scan datagrams but send no reply: the response envelope is not recoverable from
+#     the binary without inventing it, which this decoy never does.
 # ===================================================================================================
+
+# The device's TLS profile, verified ex firmware (nginx-auth-proxy/nginx.conf for the web; sm_app
+# links OpenSSL 1.0.2d for the Service Tool port).  TLS 1.2 with this cipher list on both ports.
+DEVICE_TLS_CIPHERS = (
+    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:"
+    "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:"
+    "ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:"
+    "DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:"
+    "DHE-RSA-CHACHA20-POLY1305")
+
+# PI200 wire facts recovered from sm_app (see analysis/pi200-1041.md).
+PI200_QUERY_LEN = 64         # PI200_send_query emits a 64-byte datagram to udp/1041
+ETH485_NODE_LEN = 128        # eth485_node discovery record size
+
+
+def _st_ssl_context():
+    """TLS context for the Service Tool port.  Prefer a dedicated ST cert (the real device has a
+    separate /danfoss/certs/st_cert.pem), fall back to the web cert, then to None (plaintext capture).
+    The real server uses SSLv23_server_method on OpenSSL 1.0.2d, whose practical ceiling is TLS 1.2;
+    we pin TLS 1.2 with the device cipher list to match what a modern scanner negotiates."""
+    cert = os.environ.get("COLDSTORE_ST_CERT") or os.environ.get("COLDSTORE_CERT")
+    key = os.environ.get("COLDSTORE_ST_KEY") or os.environ.get("COLDSTORE_KEY")
+    if not (cert and key and os.path.exists(cert) and os.path.exists(key)):
+        return None
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    ctx.maximum_version = ssl.TLSVersion.TLSv1_2
+    try:
+        ctx.set_ciphers(DEVICE_TLS_CIPHERS)
+    except ssl.SSLError:
+        pass
+    ctx.load_cert_chain(cert, key)
+    return ctx
+
+
 class _ServiceToolHandler(socketserver.BaseRequestHandler):
     def handle(self):
         srv = self.server
         src = "%s:%d" % self.client_address[:2]
-        srv.log_event("servicetool_connect", severity="info", src=src)
-        self.request.settimeout(10)
+        ctx = srv.ssl_context
+        if ctx is None:
+            # No cert available: behave as a quiet open port and capture the opening bytes.
+            srv.log_event("servicetool_connect", severity="info", src=src, tls=False)
+            self.request.settimeout(10)
+            try:
+                data = self.request.recv(2048)
+            except (socket.timeout, OSError):
+                data = b""
+            if data:
+                srv.log_event("servicetool_data", severity="info", src=src,
+                              tls=False, bytes=len(data), head=data[:64].hex())
+            return
+        # Present the device TLS layer, exactly like the real Service Tool port.
+        self.request.settimeout(15)
         try:
-            data = self.request.recv(2048)
+            tls = ctx.wrap_socket(self.request, server_side=True)
+        except (ssl.SSLError, OSError) as exc:
+            # A plaintext probe, a legacy-TLS client, or an exploit shape fails the handshake.
+            srv.log_event("servicetool_connect", severity="info", src=src, tls=True,
+                          handshake="failed", detail=str(exc)[:120])
+            return
+        cipher = tls.cipher()
+        srv.log_event("servicetool_connect", severity="info", src=src, tls=True, handshake="ok",
+                      tls_version=(cipher[1] if cipher else None),
+                      cipher=(cipher[0] if cipher else None))
+        try:
+            data = tls.recv(2048)
         except (socket.timeout, OSError):
             data = b""
         if data:
-            srv.log_event("servicetool_data", severity="info", src=src,
+            # First application bytes inside TLS - the start of the proprietary TFN protocol.
+            srv.log_event("servicetool_data", severity="info", src=src, tls=True,
                           bytes=len(data), head=data[:64].hex())
+        try:
+            tls.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        try:
+            tls.close()
+        except OSError:
+            pass
 
 
 class ColdstoreServiceTool(socketserver.ThreadingTCPServer):
@@ -1247,6 +1337,7 @@ class ColdstoreServiceTool(socketserver.ThreadingTCPServer):
     def __init__(self, bind, plant, log_event):
         self.plant = plant
         self.log_event = log_event
+        self.ssl_context = _st_ssl_context()
         socketserver.ThreadingTCPServer.__init__(self, bind, _ServiceToolHandler)
 
 
@@ -1254,9 +1345,14 @@ class _PI200Handler(socketserver.BaseRequestHandler):
     def handle(self):
         data, _sock = self.request
         src = "%s:%d" % self.client_address[:2]
-        if data:
-            self.server.log_event("pi200", severity="info", src=src,
-                                  bytes=len(data), head=data[:64].hex())
+        if not data:
+            return
+        n = len(data)
+        # A 64-byte datagram is the shape of PI200_send_query (device discovery/scan).
+        kind = "pi200_query" if n == PI200_QUERY_LEN else "pi200"
+        self.server.log_event(kind, severity="info", src=src, bytes=n,
+                              node_sized=(n > 0 and n % ETH485_NODE_LEN == 0),
+                              head=data[:64].hex())
 
 
 class ColdstorePI200(socketserver.ThreadingUDPServer):
@@ -1313,12 +1409,7 @@ def main():
             ctx.minimum_version = ssl.TLSVersion.TLSv1_2
             ctx.maximum_version = ssl.TLSVersion.TLSv1_2
             try:
-                ctx.set_ciphers(
-                    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:"
-                    "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:"
-                    "ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:"
-                    "DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:"
-                    "DHE-RSA-CHACHA20-POLY1305")
+                ctx.set_ciphers(DEVICE_TLS_CIPHERS)
             except ssl.SSLError:
                 pass
             ctx.load_cert_chain(cert, key)
@@ -1327,11 +1418,12 @@ def main():
     def addr(s):
         return "%s:%d" % s if s else "off"
 
+    st_tls = bool(svc_srv and getattr(svc_srv, "ssl_context", None) is not None)
     logger.event("coldstore", "start", severity="info", store=STORE_NAME,
                  model=DEVICE_MODEL, firmware=FIRMWARE,
                  modbus=addr(mb), web=addr(web), snmp=addr(snmp),
                  servicetool=addr(svc), pi200=addr(pi200),
-                 web_tls=web_tls, cases=len(plant.cases))
+                 web_tls=web_tls, servicetool_tls=st_tls, cases=len(plant.cases))
 
     for s in (modbus_srv, web_srv, snmp_srv, svc_srv, pi200_srv):
         if s:

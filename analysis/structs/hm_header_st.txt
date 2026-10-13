@@ -1,0 +1,22 @@
+struct hm_header_st {
+	unsigned char              type;                 /*     0     1 */
+
+	/* XXX 3 bytes hole, try to pack */
+
+	long unsigned int          msg_len;              /*     4     4 */
+	short unsigned int         seq;                  /*     8     2 */
+
+	/* XXX 2 bytes hole, try to pack */
+
+	long unsigned int          frag_off;             /*    12     4 */
+	long unsigned int          frag_len;             /*    16     4 */
+	unsigned int               is_ccs;               /*    20     4 */
+	struct dtls1_retransmit_state saved_retransmit_state; /*    24    20 */
+
+	/* XXX last struct has 2 bytes of padding */
+
+	/* size: 44, cachelines: 1, members: 7 */
+	/* sum members: 39, holes: 2, sum holes: 5 */
+	/* paddings: 1, sum paddings: 2 */
+	/* last cacheline: 44 bytes */
+};

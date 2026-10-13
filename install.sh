@@ -31,13 +31,19 @@ if [ ! -f /etc/coldstore/cert.pem ]; then
   openssl req -new -key /etc/coldstore/key.pem -out "$t/req.csr" -subj "$SRV_SUBJ" >/dev/null 2>&1
   openssl x509 -req -in "$t/req.csr" -CA "$t/cacert.pem" -CAkey "$t/cakey.pem" \
     -CAcreateserial -days 3650 -out /etc/coldstore/cert.pem >/dev/null 2>&1
+  # The real device uses a SEPARATE cert on the Service Tool port (/danfoss/certs/st_cert.pem);
+  # reproduce that with a distinct key+cert under the same CA and subject.
+  openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out /etc/coldstore/st_key.pem >/dev/null 2>&1
+  openssl req -new -key /etc/coldstore/st_key.pem -out "$t/st_req.csr" -subj "$SRV_SUBJ" >/dev/null 2>&1
+  openssl x509 -req -in "$t/st_req.csr" -CA "$t/cacert.pem" -CAkey "$t/cakey.pem" \
+    -CAcreateserial -days 3650 -out /etc/coldstore/st_cert.pem >/dev/null 2>&1
   # ship the CA alongside so a client that validates sees the real chain
   cp "$t/cacert.pem" /etc/coldstore/cacert.pem
   rm -rf "$t"
-  echo "cert: /etc/coldstore/{cert,key}.pem (CN=DanfossSM800A, issuer SelfSigned-DanfossSM800A)"
+  echo "cert: /etc/coldstore/{cert,key}.pem + {st_cert,st_key}.pem (CN=DanfossSM800A, issuer SelfSigned-DanfossSM800A)"
 fi
 chown -R coldstore:coldstore /etc/coldstore
-chmod 0640 /etc/coldstore/cert.pem /etc/coldstore/key.pem
+chmod 0640 /etc/coldstore/*.pem 2>/dev/null || true
 
 install -m 0644 "$D/coldstore.service" /etc/systemd/system/coldstore.service
 systemctl daemon-reload

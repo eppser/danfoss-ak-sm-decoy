@@ -11,8 +11,8 @@ device firmware's own firewall (`firewall1.sh`) — share one simulated store:
 | Modbus/TCP | 502 | the southbound control bus an AK-SM exposes; reads return live case temperatures and setpoints, writes are accepted and reflected |
 | StoreView-Web (HTTPS) | 8443 | the remote management UI (`nginx/1.26.0`, title *Danfoss - StoreView Web*): login, dashboard, alarms, configuration, and `xml.cgi` |
 | SNMP | 5136/udp | the device's SNMP agent (Danfoss uses fixed UDP **5136**, not 161): answers the system group with the unit's real identity under Danfoss's enterprise OID `1.3.6.1.4.1.9615` |
-| Service Tool | 1041/tcp | the proprietary Danfoss Service Tool port — accepts and records the client's opening bytes |
-| PI200 | 1041/udp | the proprietary Danfoss PI200 discovery port — records the datagram |
+| Service Tool | 1041/tcp | the Danfoss Service Tool port — a **TLS server** presenting the device certificate (as the real `sm_app` does); captures the client's first application bytes, does not emulate the proprietary protocol inside TLS |
+| PI200 | 1041/udp | the Danfoss PI200 discovery port — **decodes and flags** query/scan datagrams (a 64-byte datagram is the device's discovery query); does not reply |
 
 It is a **decoy**. There is no refrigeration behind it — the plant is a time-driven simulation,
 and a "write" (a Modbus register write, a setpoint change in the web UI) is stored in memory and
@@ -138,10 +138,11 @@ request and idle limits, a per-address connection cap, and correct Modbus except
 python3 -m unittest test_coldstore      # Modbus, web UI, SNMP, the proprietary ports, logging
 ```
 
-36 tests: Modbus framing and semantics, the StoreView web surface (incl. byte-exact nginx
+41 tests: Modbus framing and semantics, the StoreView web surface (incl. byte-exact nginx
 error/405/204 fixtures), the SNMP system group (v1/v2c GET + GETNEXT walk, Danfoss OID, bad-community
-drop, SET logged as control and changes nothing), the Service Tool / PI200 capture, and that every
-interaction is logged with the right severity.
+drop, SET logged as control and changes nothing), the Service Tool TLS handshake (presents the
+device cert over TLS 1.2; a plaintext probe fails the handshake and is logged) and PI200
+query-flagging, and that every interaction is logged with the right severity.
 
 ## Discovery
 
@@ -190,10 +191,22 @@ ports are served directly:
   the Danfoss IANA enterprise number), drops a wrong community silently (as a real agent does, and
   so it is not an amplification relay), and refuses SET while logging it as a control event. It
   exists so a scanner can fingerprint the box as Danfoss; it reconstructs no device-specific logic.
-- **Service Tool, TCP 1041** and **PI200, UDP 1041.** Proprietary Danfoss protocols with no public
-  specification. There is nothing faithful to reply with — a wrong answer is a worse tell than a
-  quiet open port — so these are **capture-and-log only**: the TCP port accepts and records the
-  client's opening bytes, the UDP port records the datagram, and neither sends a crafted response.
+- **Service Tool, TCP 1041.** Reverse-engineering the real server binary `sm_app` (full DWARF; see
+  [`analysis/`](analysis/)) shows this port is a **TLS server**: `sm_app` calls `SSL_accept` /
+  `SSL_CTX_use_certificate_file` (OpenSSL 1.0.2d) presenting `/danfoss/certs/st_cert.pem`, then
+  speaks a proprietary protocol of ~1617 `TFN_*` transaction functions *inside* TLS. The decoy now
+  presents that TLS layer exactly — a TLS scanner (nmap `ssl-enum-ciphers`, Shodan) sees a real
+  handshake and the device certificate — then captures the client's first application bytes and
+  closes. The TFN layer is **not** emulated: it is unspecified, and a wrong reply inside TLS would
+  be a worse tell than silence.
+- **PI200, UDP 1041.** `sm_app`'s `PI200_send_query` emits a **64-byte** discovery query to udp/1041;
+  node records travel as the 128-byte `eth485_node` struct (`protocol_version`, `store_name[31]`,
+  `unit_name[31]`, `ip_address`, versions, `checkbyte`). The decoy **decodes and flags** inbound
+  query/scan datagrams (`pi200_query` for the 64-byte shape) but sends **no reply**: the response
+  envelope is not recoverable from the binary without inventing it, which this decoy never does.
+
+The full reverse-engineering notes, the certificates, the struct layouts, the `TFN_*` catalogue and
+the captured handshakes live in [`analysis/`](analysis/), alongside a per-protocol accuracy judgment.
 
 **Run dynamically.** The device's own nginx binary (ARM EABI5, from the rootfs) was executed under
 emulation: it reports `nginx/1.26.0`, `built with OpenSSL 1.0.2o (2018)`, cross-built for `arm`,

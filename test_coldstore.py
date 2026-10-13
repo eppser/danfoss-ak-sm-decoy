@@ -409,6 +409,87 @@ class ProprietaryPortsTest(unittest.TestCase):
         s.close()
         self.assertTrue([l for l in self.logs() if l["action"] == "pi200"])
 
+    def test_pi200_query_sized_datagram_is_flagged(self):
+        # A 64-byte datagram is the shape of the device's PI200_send_query (RE'd from sm_app).
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.sendto(b"Q" * model.PI200_QUERY_LEN, ("127.0.0.1", self.pi_port))
+        s.sendto(b"x" * 10, ("127.0.0.1", self.pi_port))      # not query-sized
+        time.sleep(0.2)
+        s.close()
+        actions = [l["action"] for l in self.logs()]
+        self.assertIn("pi200_query", actions)
+        self.assertIn("pi200", actions)
+
+
+def _make_device_cert(tmp):
+    """Self-signed cert with the real device subject, via the openssl CLI."""
+    import subprocess
+    cert = os.path.join(tmp, "st_cert.pem")
+    key = os.path.join(tmp, "st_key.pem")
+    subj = "/C=US/ST=MD/L=Baltimore/O=Danfoss/OU=SM800A/CN=DanfossSM800A"
+    subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes",
+                    "-keyout", key, "-out", cert, "-days", "3650", "-subj", subj],
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return cert, key
+
+
+class ServiceToolTlsTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.logpath = os.path.join(self.tmp, "log.jsonl")
+        self.logger = clog.Logger(self.logpath, echo=False)
+        self.plant = model.default_plant()
+        cert, key = _make_device_cert(self.tmp)
+        self.cert_path = cert
+        self._env = {}
+        for k, v in (("COLDSTORE_ST_CERT", cert), ("COLDSTORE_ST_KEY", key)):
+            self._env[k] = os.environ.get(k)
+            os.environ[k] = v
+        self.svc = ColdstoreServiceTool(("127.0.0.1", 0), self.plant, self.logger.bind("servicetool"))
+        self.svc_port = self.svc.server_address[1]
+        threading.Thread(target=self.svc.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True).start()
+        self.addCleanup(self.svc.server_close)
+        self.addCleanup(self.svc.shutdown)
+        self.addCleanup(self.logger.close)
+
+    def tearDown(self):
+        for k, v in self._env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+    def logs(self):
+        with open(self.logpath) as f:
+            return [json.loads(l) for l in f]
+
+    def test_servicetool_presents_device_cert_over_tls(self):
+        import ssl as _ssl
+        self.assertIsNotNone(self.svc.ssl_context)      # cert was picked up
+        ctx = _ssl.SSLContext(_ssl.PROTOCOL_TLS_CLIENT)
+        ctx.check_hostname = False
+        ctx.verify_mode = _ssl.CERT_REQUIRED
+        ctx.load_verify_locations(self.cert_path)        # self-signed: trust it to expose its subject
+        raw = socket.create_connection(("127.0.0.1", self.svc_port), timeout=5)
+        tls = ctx.wrap_socket(raw, server_hostname="DanfossSM800A")
+        cert = tls.getpeercert()
+        subject = dict(x[0] for x in cert["subject"])
+        self.assertEqual(subject.get("commonName"), "DanfossSM800A")
+        self.assertEqual(tls.version(), "TLSv1.2")
+        tls.sendall(b"\x00\x01app-bytes")
+        time.sleep(0.3)
+        tls.close()
+        conn = [l for l in self.logs() if l["action"] == "servicetool_connect"]
+        self.assertTrue(conn and conn[-1].get("handshake") == "ok" and conn[-1].get("tls") is True)
+
+    def test_plaintext_probe_fails_handshake_and_is_logged(self):
+        s = socket.create_connection(("127.0.0.1", self.svc_port), timeout=5)
+        s.sendall(b"GET / HTTP/1.0\r\n\r\n")            # not a TLS ClientHello
+        time.sleep(0.4)
+        s.close()
+        conn = [l for l in self.logs() if l["action"] == "servicetool_connect"]
+        self.assertTrue(conn and conn[-1].get("handshake") == "failed")
+
 
 class ModelTest(unittest.TestCase):
     def test_temps_plausible(self):

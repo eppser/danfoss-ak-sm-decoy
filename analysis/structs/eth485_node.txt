@@ -1,0 +1,25 @@
+struct eth485_node {
+	UINT16                     protocol_version;     /*     0     2 */
+	UINT16                     software_version;     /*     2     2 */
+	UINT8                      type;                 /*     4     1 */
+	UINT8                      status;               /*     5     1 */
+	UINT16                     seq;                  /*     6     2 */
+	UINT8                      command;              /*     8     1 */
+	UINT8                      number_of_units;      /*     9     1 */
+	UINT16                     local_address;        /*    10     2 */
+	UINT32                     ip_address;           /*    12     4 */
+	UINT32                     internet_address1;    /*    16     4 */
+	UINT32                     internet_address2;    /*    20     4 */
+	UINT32                     internet_address3;    /*    24     4 */
+	UINT16                     port_number;          /*    28     2 */
+	UINT16                     internet_port;        /*    30     2 */
+	UINT8                      logger;               /*    32     1 */
+	UINT8                      store_name[31];       /*    33    31 */
+	/* --- cacheline 1 boundary (64 bytes) --- */
+	UINT8                      unit_name[31];        /*    64    31 */
+	UINT8                      spare[30];            /*    95    30 */
+	UINT8                      checkbyte;            /*   125     1 */
+
+	/* size: 128, cachelines: 2, members: 19 */
+	/* padding: 2 */
+};

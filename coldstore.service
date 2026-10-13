@@ -17,6 +17,8 @@ Environment=COLDSTORE_SERVICETOOL_BIND=0.0.0.0:1041
 Environment=COLDSTORE_PI200_BIND=0.0.0.0:1041
 Environment=COLDSTORE_CERT=/etc/coldstore/cert.pem
 Environment=COLDSTORE_KEY=/etc/coldstore/key.pem
+Environment=COLDSTORE_ST_CERT=/etc/coldstore/st_cert.pem
+Environment=COLDSTORE_ST_KEY=/etc/coldstore/st_key.pem
 ExecStart=/usr/bin/python3 /opt/coldstore/coldstore.py
 Restart=always
 RestartSec=3

@@ -1,0 +1,241 @@
+Connecting to 127.0.0.1
+CONNECTED(00000003)
+>>> TLS 1.0, RecordHeader [length 0005]
+    16 03 01 00 cc
+>>> TLS 1.2, Handshake [length 00cc], ClientHello
+    01 00 00 c8 03 03 07 67 3c 95 33 c1 e5 90 e6 b5
+    5b d9 61 e9 2c 09 c4 48 1a 7d 57 8e d8 26 e4 dd
+    67 15 7a 3b 00 79 00 00 36 c0 2c c0 30 00 9f cc
+    a9 cc a8 cc aa c0 2b c0 2f 00 9e c0 24 c0 28 00
+    6b c0 23 c0 27 00 67 c0 0a c0 14 00 39 c0 09 c0
+    13 00 33 00 9d 00 9c 00 3d 00 3c 00 35 00 2f 01
+    00 00 69 ff 01 00 01 00 00 00 00 0e 00 0c 00 00
+    09 41 4b 2d 53 4d 38 30 30 41 00 0b 00 04 03 00
+    01 02 00 0a 00 0c 00 0a 00 1d 00 17 00 1e 00 18
+    00 19 00 23 00 00 00 16 00 00 00 17 00 00 00 0d
+    00 2a 00 28 04 03 05 03 06 03 08 07 08 08 08 09
+    08 0a 08 0b 08 04 08 05 08 06 04 01 05 01 06 01
+    03 03 03 01 03 02 04 02 05 02 06 02
+<<< TLS 1.2, RecordHeader [length 0005]
+    16 03 03 00 41
+<<< TLS 1.2, Handshake [length 0041], ServerHello
+    02 00 00 3d 03 03 cf 6e 74 0a 36 2d 4d a1 a7 69
+    0b e1 64 34 cf a0 a8 bf f3 fd 20 18 ff ce 35 aa
+    9f ee 11 6d 4e 5f 00 c0 2f 00 00 15 ff 01 00 01
+    00 00 0b 00 04 03 00 01 02 00 23 00 00 00 17 00
+    00
+<<< TLS 1.2, RecordHeader [length 0005]
+    16 03 03 03 cb
+<<< TLS 1.2, Handshake [length 03cb], Certificate
+    0b 00 03 c7 00 03 c4 00 03 c1 30 82 03 bd 30 82
+    02 a5 a0 03 02 01 02 02 14 24 27 b2 e8 ab a2 fb
+    71 cb 21 ac 3d e7 84 59 bb 11 38 79 dd 30 0d 06
+    09 2a 86 48 86 f7 0d 01 01 0b 05 00 30 81 83 31
+    0b 30 09 06 03 55 04 06 13 02 55 53 31 0b 30 09
+    06 03 55 04 08 0c 02 4d 44 31 12 30 10 06 03 55
+    04 07 0c 09 42 61 6c 74 69 6d 6f 72 65 31 10 30
+    0e 06 03 55 04 0a 0c 07 44 61 6e 66 6f 73 73 31
+    1e 30 1c 06 03 55 04 0b 0c 15 43 65 72 74 69 66
+    69 63 61 74 65 5f 41 75 74 68 6f 72 69 74 79 31
+    21 30 1f 06 03 55 04 03 0c 18 53 65 6c 66 53 69
+    67 6e 65 64 2d 44 61 6e 66 6f 73 73 53 4d 38 30
+    30 41 30 1e 17 0d 32 36 31 30 31 32 31 37 32 36
+    31 32 5a 17 0d 33 36 31 30 30 39 31 37 32 36 31
+    32 5a 30 69 31 0b 30 09 06 03 55 04 06 13 02 55
+    53 31 0b 30 09 06 03 55 04 08 0c 02 4d 44 31 12
+    30 10 06 03 55 04 07 0c 09 42 61 6c 74 69 6d 6f
+    72 65 31 10 30 0e 06 03 55 04 0a 0c 07 44 61 6e
+    66 6f 73 73 31 0f 30 0d 06 03 55 04 0b 0c 06 53
+    4d 38 30 30 41 31 16 30 14 06 03 55 04 03 0c 0d
+    44 61 6e 66 6f 73 73 53 4d 38 30 30 41 30 82 01
+    22 30 0d 06 09 2a 86 48 86 f7 0d 01 01 01 05 00
+    03 82 01 0f 00 30 82 01 0a 02 82 01 01 00 92 e4
+    61 5a 57 bb 73 53 3a c0 4f c6 aa 74 fe a1 ea d6
+    4c ef 5e 4f ea 44 41 3b 73 84 86 a8 78 b7 ee 34
+    6e 9a 20 71 cb 1a 06 d9 18 c7 7c eb cc fa 1c a3
+    ac 8d 3e ea ce af be 03 1b 02 32 c4 0b af b2 e5
+    33 1e fd 7e ba 55 b3 29 75 4f e2 50 9c 55 67 1a
+    35 22 61 70 25 00 10 0d c5 bc 61 3a cb 7d 50 df
+    47 ca 84 f7 00 bd 70 26 60 f9 45 58 2c e6 4c 09
+    98 c3 16 8a 46 cd 17 50 e8 88 ca 99 cb b2 fd c6
+    7e 3f 68 aa 46 12 40 3a ad e8 de 70 9f 07 07 fc
+    e4 59 a1 7d 3c 8d 8f 1f 1e 8c 39 dc b6 99 7c 50
+    1b 71 24 01 4b 65 30 ab d2 5a f6 bd 2f 31 8d d8
+    63 e4 e4 ad 0f 3d 60 41 fd 37 28 17 ce 07 40 a8
+    6a 91 17 6c af e4 4b 86 14 d4 9d 5e 5e 5f 61 4f
+    08 b3 f1 ad 09 a4 c4 5e 89 1f 8f b5 52 70 49 2c
+    eb 2a 42 bf df 34 e7 36 19 f3 14 d0 c6 05 ae 5b
+    ef 24 c2 51 c0 53 7f 8d 5d 03 3c 30 47 7d 02 03
+    01 00 01 a3 42 30 40 30 1d 06 03 55 1d 0e 04 16
+    04 14 48 ca 39 32 7e ef 37 9f cc 18 bf f0 5c 32
+    a0 a9 a4 18 2e ec 30 1f 06 03 55 1d 23 04 18 30
+    16 80 14 42 37 3a b3 31 14 ca 64 e3 aa 67 d5 a2
+    f6 ad db 32 9b 59 9e 30 0d 06 09 2a 86 48 86 f7
+    0d 01 01 0b 05 00 03 82 01 01 00 cc 7a 3c 27 b1
+    ca df 1a 8f cc ad 1e 37 d4 5b c6 98 d7 c8 17 42
+    6b 8c e7 24 4e 3f 0c b7 25 55 ea 9f e0 90 53 2c
+    f8 27 d9 4c ad 06 07 10 52 d3 db b3 40 9d c3 ba
+    d9 93 51 89 d3 6a 4c f1 c7 d9 ca 1b 0f 8d 49 a5
+    6b 39 1a 94 63 7a db 1b f9 53 a7 ca db 25 5f 98
+    b6 ca 20 b6 c6 8f f2 97 8d cc 47 fa 35 de e0 5f
+    d6 92 95 1b 7e 16 a4 ad 2f 1e 7a fe 9b 08 61 f7
+    d1 3a 52 fc f5 40 aa 78 90 b3 63 03 93 c1 2a 8b
+    c4 cf 39 2d bf ba 0b 0a 92 4d ed 3c b5 f9 e2 c6
+    01 87 fe 8b e4 bd 47 d2 c2 19 50 92 0a 4d 08 84
+    cb dd 4f 0e e6 8d ea 46 17 50 b6 b9 a5 ba 96 63
+    99 44 09 e1 5f dd 9c 52 e1 2e e6 4d a4 39 aa cc
+    b6 74 ae 6e d1 d3 b7 8b 15 75 93 ff 37 73 e5 8f
+    e5 f7 c3 c6 e2 92 76 f1 a3 bc fd 3e 76 a0 57 01
+    be 78 45 35 a5 20 8f c6 53 e3 b1 9e 40 0a 2f 30
+    79 2e 13 02 73 ff 56 33 aa 2d 7e
+depth=0 C=US, ST=MD, L=Baltimore, O=Danfoss, OU=SM800A, CN=DanfossSM800A
+verify error:num=20:unable to get local issuer certificate
+verify return:1
+depth=0 C=US, ST=MD, L=Baltimore, O=Danfoss, OU=SM800A, CN=DanfossSM800A
+verify error:num=21:unable to verify the first certificate
+verify return:1
+depth=0 C=US, ST=MD, L=Baltimore, O=Danfoss, OU=SM800A, CN=DanfossSM800A
+verify return:1
+<<< TLS 1.2, RecordHeader [length 0005]
+    16 03 03 01 2c
+<<< TLS 1.2, Handshake [length 012c], ServerKeyExchange
+    0c 00 01 28 03 00 1d 20 32 f9 9f 75 58 0f 8e 9d
+    d7 a0 d1 1f 49 f3 ae 3a 58 45 5e 8b 96 9f c1 7f
+    f7 5f 2b 8f f4 ce 3f 0a 08 04 01 00 7a 4c 85 6e
+    44 e7 8b 97 76 f9 55 4a 3b fa d0 da 61 3e 51 5c
+    a2 47 03 3e fb f4 6d a2 2f 51 85 58 23 6c 9a cd
+    88 81 9d 0f b7 ca a6 66 3a 26 b0 45 4f e8 1b f6
+    ef 05 35 2a c3 be b3 7a 05 ef 2b 67 fa 1e 50 e5
+    6e f4 d3 96 35 dd 6c 7c 37 88 d1 ab a8 df 93 de
+    58 45 fd e2 17 da 7e e0 c2 98 49 28 cb a6 62 39
+    39 2d b8 15 40 21 59 73 23 55 72 ca 21 0c 8d 55
+    cc 9a 0d 16 5f 1f 9e 11 ee 5a 85 3b 92 0f 0b b1
+    ed bc d0 da 20 1b 95 ff ce 43 ce 55 1c 48 10 93
+    d0 e0 89 dd 34 4b b3 5a bb ea 72 55 93 e0 32 e4
+    2f fa 17 e4 33 ad 84 bf 1f 9f cd 92 10 9d 70 31
+    26 91 da 1a b4 19 1d 67 5e 26 54 42 aa b1 dc e0
+    dc 70 b6 2e 91 c4 bb 49 6a 1b 83 dd 53 9b cb a6
+    ff 5c 95 4a fe a2 a6 9c 4e 7c f7 a1 3d 03 96 a0
+    0f 23 7a 33 2d c7 59 3b 60 8e f4 a4 36 f5 a4 4d
+    77 06 8e 7d e2 61 1b 80 c8 67 ae 93
+<<< TLS 1.2, RecordHeader [length 0005]
+    16 03 03 00 04
+<<< TLS 1.2, Handshake [length 0004], ServerHelloDone
+    0e 00 00 00
+>>> TLS 1.2, RecordHeader [length 0005]
+    16 03 03 00 25
+>>> TLS 1.2, Handshake [length 0025], ClientKeyExchange
+    10 00 00 21 20 c9 4e 2a 39 67 be c4 b8 ed 5c e5
+    34 db 41 42 9f 00 b9 cf 7b 89 4e c4 cb a9 a9 5f
+    fd 13 94 49 57
+>>> TLS 1.2, RecordHeader [length 0005]
+    14 03 03 00 01
+>>> TLS 1.2, ChangeCipherSpec [length 0001]
+    01
+>>> TLS 1.2, RecordHeader [length 0005]
+    16 03 03 00 28
+>>> TLS 1.2, Handshake [length 0010], Finished
+    14 00 00 0c 16 46 2a 23 9c 8d df 96 be 9b 42 8e
+<<< TLS 1.2, RecordHeader [length 0005]
+    16 03 03 00 ba
+<<< TLS 1.2, Handshake [length 00ba], NewSessionTicket
+    04 00 00 b6 00 00 1c 20 00 b0 42 12 e9 01 b9 d1
+    69 1f 9c 35 3c 6f 92 97 1a 0c 45 9d 24 e4 ee 48
+    07 01 67 22 56 48 a4 70 f3 e1 10 12 3d d9 b6 c3
+    7a c6 bd 53 a1 39 80 42 ab 6e 2c 04 f9 a3 25 93
+    65 8e ce a1 88 ee a8 66 37 3f 51 e6 c5 18 87 f0
+    e6 d7 74 da a7 12 3c 1b 7d a7 69 0c 9b 4c b4 97
+    75 e8 25 89 a8 bf 35 d9 d6 38 be 45 b4 c8 40 fe
+    ce f6 3f 5b 1f db 30 42 7b 9a 16 3e 82 16 49 d8
+    74 28 f8 42 91 9b 27 a8 fa e9 f0 1c ce 49 e9 02
+    ae 18 a0 b1 ff 76 23 f0 45 07 f3 86 7c bc 5d 30
+    17 72 2d cb c9 1a 4c 0d 15 78 b2 b3 d7 c3 54 b3
+    16 8c 68 2b a1 00 5f 43 04 5a
+<<< TLS 1.2, RecordHeader [length 0005]
+    14 03 03 00 01
+<<< TLS 1.2, RecordHeader [length 0005]
+    16 03 03 00 28
+<<< TLS 1.2, Handshake [length 0010], Finished
+    14 00 00 0c f3 0b fc 9b c3 57 09 e9 36 4c a5 1e
+---
+Certificate chain
+ 0 s:C=US, ST=MD, L=Baltimore, O=Danfoss, OU=SM800A, CN=DanfossSM800A
+   i:C=US, ST=MD, L=Baltimore, O=Danfoss, OU=Certificate_Authority, CN=SelfSigned-DanfossSM800A
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: Oct 12 17:26:12 2026 GMT; NotAfter: Oct  9 17:26:12 2036 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDvTCCAqWgAwIBAgIUJCey6Kui+3HLIaw954RZuxE4ed0wDQYJKoZIhvcNAQEL
+BQAwgYMxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJNRDESMBAGA1UEBwwJQmFsdGlt
+b3JlMRAwDgYDVQQKDAdEYW5mb3NzMR4wHAYDVQQLDBVDZXJ0aWZpY2F0ZV9BdXRo
+b3JpdHkxITAfBgNVBAMMGFNlbGZTaWduZWQtRGFuZm9zc1NNODAwQTAeFw0yNjEw
+MTIxNzI2MTJaFw0zNjEwMDkxNzI2MTJaMGkxCzAJBgNVBAYTAlVTMQswCQYDVQQI
+DAJNRDESMBAGA1UEBwwJQmFsdGltb3JlMRAwDgYDVQQKDAdEYW5mb3NzMQ8wDQYD
+VQQLDAZTTTgwMEExFjAUBgNVBAMMDURhbmZvc3NTTTgwMEEwggEiMA0GCSqGSIb3
+DQEBAQUAA4IBDwAwggEKAoIBAQCS5GFaV7tzUzrAT8aqdP6h6tZM715P6kRBO3OE
+hqh4t+40bpogccsaBtkYx3zrzPoco6yNPurOr74DGwIyxAuvsuUzHv1+ulWzKXVP
+4lCcVWcaNSJhcCUAEA3FvGE6y31Q30fKhPcAvXAmYPlFWCzmTAmYwxaKRs0XUOiI
+ypnLsv3Gfj9oqkYSQDqt6N5wnwcH/ORZoX08jY8fHow53LaZfFAbcSQBS2Uwq9Ja
+9r0vMY3YY+TkrQ89YEH9NygXzgdAqGqRF2yv5EuGFNSdXl5fYU8Is/GtCaTEXokf
+j7VScEks6ypCv9805zYZ8xTQxgWuW+8kwlHAU3+NXQM8MEd9AgMBAAGjQjBAMB0G
+A1UdDgQWBBRIyjkyfu83n8wYv/BcMqCppBgu7DAfBgNVHSMEGDAWgBRCNzqzMRTK
+ZOOqZ9Wi9q3bMptZnjANBgkqhkiG9w0BAQsFAAOCAQEAzHo8J7HK3xqPzK0eN9Rb
+xpjXyBdCa4znJE4/DLclVeqf4JBTLPgn2UytBgcQUtPbs0Cdw7rZk1GJ02pM8cfZ
+yhsPjUmlazkalGN62xv5U6fK2yVfmLbKILbGj/KXjcxH+jXe4F/WkpUbfhakrS8e
+ev6bCGH30TpS/PVAqniQs2MDk8Eqi8TPOS2/ugsKkk3tPLX54sYBh/6L5L1H0sIZ
+UJIKTQiEy91PDuaN6kYXULa5pbqWY5lECeFf3ZxS4S7mTaQ5qsy2dK5u0dO3ixV1
+k/83c+WP5ffDxuKSdvGjvP0+dqBXAb54RTWlII/GU+OxnkAKLzB5LhMCc/9WM6ot
+fg==
+-----END CERTIFICATE-----
+subject=C=US, ST=MD, L=Baltimore, O=Danfoss, OU=SM800A, CN=DanfossSM800A
+issuer=C=US, ST=MD, L=Baltimore, O=Danfoss, OU=Certificate_Authority, CN=SelfSigned-DanfossSM800A
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: rsa_pss_rsae_sha256
+Peer Temp Key: X25519, 253 bits
+---
+SSL handshake has read 1602 bytes and written 302 bytes
+Verification error: unable to verify the first certificate
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES128-GCM-SHA256
+Protocol: TLSv1.2
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES128-GCM-SHA256
+    Session-ID: 4AA00CE90A1D8AEFEF9F2AFC1DC354C8F8E30BBE36D77B5F276E1D61F624BBDB
+    Session-ID-ctx: 
+    Master-Key: 45EE6392A1F05DC4B92FD68F491515208C44B9B695AB2834718E3D5FC7B8A0E279AF953E0EA6BB5B1F9B12F9797AD862
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 7200 (seconds)
+    TLS session ticket:
+    0000 - 42 12 e9 01 b9 d1 69 1f-9c 35 3c 6f 92 97 1a 0c   B.....i..5<o....
+    0010 - 45 9d 24 e4 ee 48 07 01-67 22 56 48 a4 70 f3 e1   E.$..H..g"VH.p..
+    0020 - 10 12 3d d9 b6 c3 7a c6-bd 53 a1 39 80 42 ab 6e   ..=...z..S.9.B.n
+    0030 - 2c 04 f9 a3 25 93 65 8e-ce a1 88 ee a8 66 37 3f   ,...%.e......f7?
+    0040 - 51 e6 c5 18 87 f0 e6 d7-74 da a7 12 3c 1b 7d a7   Q.......t...<.}.
+    0050 - 69 0c 9b 4c b4 97 75 e8-25 89 a8 bf 35 d9 d6 38   i..L..u.%...5..8
+    0060 - be 45 b4 c8 40 fe ce f6-3f 5b 1f db 30 42 7b 9a   .E..@...?[..0B{.
+    0070 - 16 3e 82 16 49 d8 74 28-f8 42 91 9b 27 a8 fa e9   .>..I.t(.B..'...
+    0080 - f0 1c ce 49 e9 02 ae 18-a0 b1 ff 76 23 f0 45 07   ...I.......v#.E.
+    0090 - f3 86 7c bc 5d 30 17 72-2d cb c9 1a 4c 0d 15 78   ..|.]0.r-...L..x
+    00a0 - b2 b3 d7 c3 54 b3 16 8c-68 2b a1 00 5f 43 04 5a   ....T...h+.._C.Z
+
+    Start Time: 1791907671
+    Timeout   : 7200 (sec)
+    Verify return code: 21 (unable to verify the first certificate)
+    Extended master secret: yes
+---
+DONE
+>>> TLS 1.2, RecordHeader [length 0005]
+    15 03 03 00 1a
+>>> TLS 1.2, Alert [length 0002], warning close_notify
+    01 00
