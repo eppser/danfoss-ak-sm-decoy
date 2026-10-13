@@ -23,6 +23,43 @@ control action. Nothing is actuated; nothing reaches out. Run it directly:
 python3 coldstore.py            # all five listeners on one shared plant; Ctrl-C to stop
 ```
 
+## Architecture
+
+One process, five listeners, one shared simulated plant, one log — and no path out. It needs **no
+backend, no database, no tunnel, and no central server**: `python3 coldstore.py` is the whole thing,
+and it never makes an outbound connection.
+
+```mermaid
+flowchart TB
+    A["Attacker / scanner<br/>ICS crawler · exploit tool · agent"]
+    A -->|probes · reads · writes · payloads| LIS
+
+    subgraph PROC["coldstore.py — one stdlib process, no outbound, no backend"]
+      LIS["Five listeners · real AK-SM 800A port profile<br/>Modbus 502 · StoreView-Web 8443 · SNMP 5136 · Service Tool 1041 · PI200 1041"]
+      MODEL["Shared plant model<br/>12 refrigerated cases, time-driven temps"]
+      OVR["In-memory overrides<br/>writes reflected on next read"]
+      LOG[("JSONL log + journal<br/>info = scans / reads<br/>control = writes / exploit attempts")]
+      LIS -->|reads| MODEL
+      LIS -->|register/coil write · setpoint · login · injection| OVR
+      OVR -->|shown back| MODEL
+      LIS --> LOG
+      OVR --> LOG
+    end
+
+    MODEL -. would actuate .-> REAL["Real refrigeration hardware<br/>NONE — nothing is actuated"]
+    LOG -. would ship to .-> BE["Central / shibboleth server<br/>NONE — nothing dials out"]
+```
+
+- **Standalone.** No outbound, no tunnel, no collector, no external dependencies — runs anywhere
+  Python 3 runs. (It began life as one lure in a larger honeypot project, but carries nothing of it:
+  the evidence is its own JSONL log.)
+- **Decoy only.** A write — a Modbus register/coil, a web setpoint, a login, an injected command —
+  becomes an in-memory override shown back on the next read and logged as a `control` event; nothing
+  is actuated and no injected command is ever executed, so the published exploit "lands" yet cannot
+  pop the host.
+- **One shared plant.** All five listeners read and write the same time-driven model, so the Modbus
+  control bus and the StoreView web UI always agree.
+
 ## What it logs
 
 One JSON line per interaction in `/var/log/coldstore/coldstore.jsonl` (also the journal), with the
