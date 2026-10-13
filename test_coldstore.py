@@ -207,6 +207,22 @@ class WebTest(unittest.TestCase):
         self.assertIn("Danfoss", body)
         self.assertEqual(h.get("Server"), "nginx/1.26.0")  # exact banner from Danux firmware
 
+    def test_static_page_has_old_last_modified(self):
+        st, h, body = self.req("GET", "/")
+        self.assertEqual(st, 200)
+        self.assertIn("2023", h.get("Last-Modified", ""))          # firmware-era build mtime
+        self.assertTrue(h.get("ETag", "").startswith('"'))          # nginx static: ETag present
+        self.assertEqual(h.get("Accept-Ranges"), "bytes")
+
+    def test_dynamic_and_error_have_no_last_modified(self):
+        # xml.cgi is dynamic (FastCGI) and errors are nginx-generated: no Last-Modified, like the device
+        _, hx, _ = self.req("POST", "/xml.cgi", "action=getstatus",
+                            {"Content-Type": "application/x-www-form-urlencoded"})
+        self.assertNotIn("Last-Modified", hx)
+        st, he, _ = self.req("GET", "/nope")
+        self.assertEqual(st, 404)
+        self.assertNotIn("Last-Modified", he)
+
     def test_login_records_credentials(self):
         self.req("POST", "/login", "user=admin&password=Danfoss",
                  {"Content-Type": "application/x-www-form-urlencoded"})

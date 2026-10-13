@@ -33,7 +33,9 @@ Env:
                                   otherwise plain HTTP (a real unit is HTTPS)
   Set any *_BIND to the empty string to disable that listener.
 """
+import calendar
 import datetime
+import email.utils
 import hashlib
 import html
 import http.server
@@ -591,6 +593,12 @@ EXTRA_HEADERS = (
 )
 EXTRA_HEADER_BLOCK = "".join("%s: %s\r\n" % (k, v) for k, v in EXTRA_HEADERS)
 
+# The StoreView SPA shell is served by nginx from disk, so its static responses carry the firmware
+# build mtime (the 5.3.x application shipped in 2023) as Last-Modified / ETag / Accept-Ranges,
+# exactly as a real nginx does for a static file. Dynamic xml.cgi responses and error pages do not.
+BUILD_EPOCH = calendar.timegm((2023, 3, 14, 9, 12, 34, 0, 0, 0))   # 2023-03-14 09:12:34 GMT
+LAST_MODIFIED = email.utils.formatdate(BUILD_EPOCH, usegmt=True)
+
 # request shapes that match the published exploit chain or generic probing; emulated + logged only
 _SHELL = re.compile(r"[;&|`]|\$\(|\$\{|\|\||&&|\n|\r|%0a|%0d|\bnc\b|/bin/|wget|curl\s", re.I)
 _TRAVERSAL = re.compile(r"\.\./|\.\.%2f|%2e%2e/|/etc/passwd|/etc/shadow", re.I)
@@ -778,6 +786,13 @@ class _WebHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
+        # A static page served from disk (the SPA shell) carries the firmware build mtime, like
+        # nginx: Last-Modified + a matching ETag + Accept-Ranges. Dynamic (xml.cgi) and non-200
+        # replies do not.
+        if code == 200 and ctype.startswith("text/html"):
+            self.send_header("Last-Modified", LAST_MODIFIED)
+            self.send_header("ETag", '"%x-%x"' % (BUILD_EPOCH, len(data)))
+            self.send_header("Accept-Ranges", "bytes")
         for k, v in (extra or {}).items():
             self.send_header(k, v)
         self.send_header("Connection", "keep-alive")
