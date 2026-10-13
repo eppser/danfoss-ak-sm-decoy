@@ -58,7 +58,7 @@ class ModbusTest(unittest.TestCase):
         self.assertEqual(fc, 3)
         self.assertEqual(resp[0], 2)
         (raw,) = struct.unpack(">h", resp[1:3])
-        self.assertAlmostEqual(raw / 10.0, 3.0, places=1)     # Charcuterie setpoint 3.0
+        self.assertAlmostEqual(raw / 10.0, 3.0, places=1)     # Wurstwaren SB setpoint 3.0
 
     def test_read_air_temperature_input(self):
         s = self.conn()
@@ -221,8 +221,8 @@ class WebTest(unittest.TestCase):
     def test_dashboard_renders_cases(self):
         st, h, body = self.req("GET", "/dashboard")
         self.assertEqual(st, 200)
-        self.assertIn("Charcuterie", body)
-        self.assertIn("Surgeles", body)
+        self.assertIn("Wurstwaren", body)
+        self.assertIn("Tiefkuehltruhe", body)
         self.assertIn("Rack A", body)
 
     def test_setpoint_change_reflects_and_logs(self):

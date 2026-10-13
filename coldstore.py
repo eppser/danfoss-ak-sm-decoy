@@ -114,9 +114,9 @@ class Logger:
 # ===================================================================================================
 # The simulated refrigeration plant (time-driven; no actuator behind any value).
 # ===================================================================================================
-STORE_NAME = "Supermarche Pre-Vert"
-STORE_ID = "PREVERT-SM01"
-SITE = "Pre-Vert - Magasin Centre"
+STORE_NAME = "Frischmarkt Gruental"
+STORE_ID = "GRUENTAL-SM01"
+SITE = "Gruental - Markt Mitte"
 DEVICE_MODEL = "AK-SM 800A"
 DEVICE_VENDOR = "Danfoss"
 FIRMWARE = "G08.053"
@@ -217,18 +217,18 @@ def default_plant():
     """A believable store: a medium-temp rack of chilled cabinets and a low-temp rack of freezers."""
     cases = [
         # node, name, kind, setpoint, diff, hi, lo, defrost_every_h, defrost_min, phase_h
-        Case(1,  "Charcuterie LS",        MT,  3.0, 2.0,  7.0, -1.0, 6,  22, 0.4),
-        Case(2,  "Cremerie 1",            MT,  4.0, 2.0,  8.0,  0.0, 6,  22, 1.1),
-        Case(3,  "Cremerie 2",            MT,  4.0, 2.0,  8.0,  0.0, 6,  22, 2.0),
-        Case(4,  "Fruits et Legumes",     MT,  6.0, 2.5, 10.0,  1.0, 8,  18, 3.2),
-        Case(5,  "Boucherie LS",          MT,  2.0, 2.0,  6.0, -2.0, 6,  22, 4.0),
-        Case(6,  "Poissonnerie",          MT,  1.0, 1.5,  5.0, -2.0, 4,  25, 5.1),
-        Case(7,  "Traiteur",              MT,  3.0, 2.0,  7.0, -1.0, 6,  22, 0.9),
-        Case(8,  "Boissons",              MT,  5.0, 2.5,  9.0,  1.0, 8,  18, 2.6),
-        Case(20, "Surgeles Bac 1",        LT, -22.0, 3.0, -16.0, -30.0, 8, 30, 1.7),
-        Case(21, "Surgeles Bac 2",        LT, -22.0, 3.0, -16.0, -30.0, 8, 30, 3.4),
-        Case(22, "Surgeles Meuble",       LT, -21.0, 3.0, -15.0, -30.0, 8, 30, 5.0),
-        Case(23, "Glaces",                LT, -24.0, 3.0, -18.0, -32.0, 8, 30, 6.3),
+        Case(1,  "Wurstwaren SB",         MT,  3.0, 2.0,  7.0, -1.0, 6,  22, 0.4),
+        Case(2,  "Molkerei 1",            MT,  4.0, 2.0,  8.0,  0.0, 6,  22, 1.1),
+        Case(3,  "Molkerei 2",            MT,  4.0, 2.0,  8.0,  0.0, 6,  22, 2.0),
+        Case(4,  "Obst und Gemuese",      MT,  6.0, 2.5, 10.0,  1.0, 8,  18, 3.2),
+        Case(5,  "Fleischerei SB",        MT,  2.0, 2.0,  6.0, -2.0, 6,  22, 4.0),
+        Case(6,  "Fischtheke",            MT,  1.0, 1.5,  5.0, -2.0, 4,  25, 5.1),
+        Case(7,  "Feinkost",              MT,  3.0, 2.0,  7.0, -1.0, 6,  22, 0.9),
+        Case(8,  "Getraenke",             MT,  5.0, 2.5,  9.0,  1.0, 8,  18, 2.6),
+        Case(20, "Tiefkuehltruhe 1",      LT, -22.0, 3.0, -16.0, -30.0, 8, 30, 1.7),
+        Case(21, "Tiefkuehltruhe 2",      LT, -22.0, 3.0, -16.0, -30.0, 8, 30, 3.4),
+        Case(22, "Tiefkuehlregal",        LT, -21.0, 3.0, -15.0, -30.0, 8, 30, 5.0),
+        Case(23, "Speiseeis",             LT, -24.0, 3.0, -18.0, -32.0, 8, 30, 6.3),
     ]
     return Plant(cases)
 
@@ -735,9 +735,9 @@ def configuration_page(user):
 def email_page(user):
     body = ("<div class=\"card\"><h2>E-mail (SMTP)</h2><div class=\"body\">"
             "<form method=\"POST\" action=\"/xml.cgi\"><input type=\"hidden\" name=\"action\" value=\"set_email\">"
-            "<label>SMTP server</label><br><input name=\"smtp_server\" value=\"smtp.pre-vert.local\" style=\"width:280px\"><br><br>"
-            "<label>From address</label><br><input name=\"from_addr\" value=\"ak-sm@pre-vert.local\" style=\"width:280px\"><br><br>"
-            "<label>Recipient</label><br><input name=\"to_addr\" value=\"maintenance@pre-vert.local\" style=\"width:280px\"><br><br>"
+            "<label>SMTP server</label><br><input name=\"smtp_server\" value=\"smtp.gruental.local\" style=\"width:280px\"><br><br>"
+            "<label>From address</label><br><input name=\"from_addr\" value=\"ak-sm@gruental.local\" style=\"width:280px\"><br><br>"
+            "<label>Recipient</label><br><input name=\"to_addr\" value=\"wartung@gruental.local\" style=\"width:280px\"><br><br>"
             "<button class=\"btn\">Save</button></form></div></div>")
     return _page("E-mail", NAV + body, user)
 

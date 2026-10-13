@@ -1,9 +1,9 @@
 # coldstore — a refrigeration system-manager decoy
 
-A second lure to run beside Cowrie on an edge. It presents the surface that attackers scanned for
-in the October 2026 campaign against French grocery chains: an internet-exposed **refrigeration
-system manager** of the Danfoss AK-SM family. It is one stdlib Python file (`coldstore.py`) you run
-directly. Five listeners — the exact external port profile of a real AK-SM 800A, verified from the
+A standalone honeypot that imitates an internet-exposed **refrigeration system manager** of the
+Danfoss AK-SM family — the surface attackers scanned for in the 2026 campaigns against grocery
+chains' cold-chain controllers. The simulated site is a German supermarket. It is one stdlib Python
+file (`coldstore.py`) you run directly, beside any existing lure. Five listeners — the exact external port profile of a real AK-SM 800A, verified from the
 device firmware's own firewall (`firewall1.sh`) — share one simulated store:
 
 | listener | port | what it imitates |
@@ -47,12 +47,11 @@ flowchart TB
     end
 
     MODEL -. would actuate .-> REAL["Real refrigeration hardware<br/>NONE — nothing is actuated"]
-    LOG -. would ship to .-> BE["Central / shibboleth server<br/>NONE — nothing dials out"]
+    LOG -. would ship to .-> BE["Any central server / SIEM<br/>NONE — nothing dials out"]
 ```
 
-- **Standalone.** No outbound, no tunnel, no collector, no external dependencies — runs anywhere
-  Python 3 runs. (It began life as one lure in a larger honeypot project, but carries nothing of it:
-  the evidence is its own JSONL log.)
+- **Standalone.** No outbound, no tunnel, no central server, no external dependencies — runs
+  anywhere Python 3 runs. The only evidence it produces is its own JSONL log.
 - **Decoy only.** A write — a Modbus register/coil, a web setpoint, a login, an injected command —
   becomes an in-memory override shown back on the next read and logged as a `control` event; nothing
   is actuated and no injected command is ever executed, so the published exploit "lands" yet cannot
@@ -69,16 +68,17 @@ caller's real address and an ISO-8601 Europe/Berlin timestamp. Scans and reads a
 
 ```json
 {"ts":"2026-10-12T18:40:11+02:00","proto":"modbus","action":"setpoint","severity":"control",
- "src":"203.0.113.9:51044","fc":6,"node":20,"case":"Surgeles Bac 1","new_setpoint_c":45.0,"register":1020}
+ "src":"203.0.113.9:51044","fc":6,"node":20,"case":"Tiefkuehltruhe 1","new_setpoint_c":45.0,"register":1020}
 {"ts":"2026-10-12T18:41:02+02:00","proto":"storeview","action":"web_login","severity":"control",
  "src":"203.0.113.9:51090","username":"admin","password":"Danfoss2019"}
 ```
 
 ## The simulated store
 
-A fictional supermarket (`Supermarche Pre-Vert`, unit `PREVERT-SM01`) with two suction groups —
-a medium-temperature rack of chilled cabinets (charcuterie, cremerie, fruits et legumes, …) and a
-low-temperature rack of freezers — modelled as twelve Danfoss-style case controllers. Air
+A fictional German supermarket (`Frischmarkt Gruental`, unit `GRUENTAL-SM01`) with two suction
+groups — a medium-temperature rack of chilled cabinets (Wurstwaren, Molkerei, Obst und Gemuese,
+Fischtheke, …) and a low-temperature rack of freezers (Tiefkuehltruhen, Speiseeis) — modelled as
+twelve Danfoss-style case controllers. Air
 temperatures cycle around each setpoint with the compressor, climb during periodic defrost and
 recover, and carry a little deterministic noise, so the plant looks alive across restarts. Raise a
 setpoint and the case drifts toward it; force a compressor coil off and the cabinet warms. Device
@@ -179,9 +179,9 @@ vulnerable code, and nothing exploitable was reconstructed.
 
 ### The port profile (SNMP 5136, Service Tool / PI200 1041)
 
-The decoy now opens the same external ports a real AK-SM 800A does. On quecheese, TCP 22 is the
-Cowrie lure and HTTP/HTTPS (80/443) belong to the krisnet site, so StoreView keeps its 8443; the
-three remaining device ports are served directly:
+The decoy opens the same external ports a real AK-SM 800A does. Where the host already uses TCP 22
+(SSH or your lure) and 80/443 (another site), StoreView keeps its 8443; the three remaining device
+ports are served directly:
 
 - **SNMP, UDP 5136.** The firmware ships no net-snmp agent or MIB — the AK-SM's SNMP is Danfoss
   proprietary and primarily trap-oriented — so this is a **modelled** minimal SNMP v1/v2c responder
@@ -231,8 +231,8 @@ lure -- so a browser sees the real shell but an empty app. The vulnerable `sm_fc
 present in the firmware but its auth/injection logic was **not** read into the decoy: endpoint
 behaviour stays modelled, nothing exploitable was reconstructed.
 
-## Not wired into the estate (yet)
+## Logging and integration
 
-This runs standalone on the edge; its evidence is its own JSONL log. It does not tunnel into the
-shibboleth server and does not produce estate records. Shipping `severity: "control"` events to the
-collector as a new record kind is the natural next step.
+This runs standalone; its evidence is its own JSONL log (and the systemd journal). It makes no
+outbound connection and needs no central server. To centralise, tail the `severity: "control"`
+events into your own SIEM or log pipeline — there is no built-in phone-home.
